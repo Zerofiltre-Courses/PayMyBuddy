@@ -1,0 +1,33 @@
+version: '3.1'
+services:
+  paymybuddy:
+    image: imzerofiltre/paymybuddy:1.0
+    container_name: paymybuddy
+    restart: always
+    environment:
+    - SPRING_DATASOURCE_USERNAME=root
+    - SPRING_DATASOURCE_PASSWORD=password
+    - SPRING_DATASOURCE_URL=jdbc:mysql://paymybuddydb:3306/db_paymybuddy
+    depends_on:
+    - paymybuddydb
+    ports:
+    - "8080:8080"
+    networks:
+    - paymybuddy
+
+  paymybuddydb:
+    image: mysql:latest
+    container_name: paymybuddydb
+    restart: always
+    environment:
+    - MYSQL_ROOT_PASSWORD=password
+    ports:
+    - "3306:3306"
+    volumes:
+    - ./src/main/resources/database:/docker-entrypoint-initdb.d
+    networks:
+    - paymybuddy
+
+networks:
+  paymybuddy:
+    driver: bridge
