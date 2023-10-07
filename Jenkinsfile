@@ -18,6 +18,20 @@ pipeline {
                 }
             }
         }
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('SonarqubeServer') {
+                    sh 'mvn sonar:sonar -s .m2/settings.xml'
+                }
+            }
+        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 10, unit: 'SECONDS') {
+        //             waitForQualityGate abortPipeline: false
+        //         }
+        //     }
+        // }
     }
 
 }
