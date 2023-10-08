@@ -2,14 +2,13 @@ pipeline {
     agent {
         dockerfile {
             filename 'Dockerfile.build'
-            args ' -v /root/.m2:/root/.m2'
+            args '-v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
-
     stages {
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'mvn clean test'
             }
 
             post {
@@ -32,6 +31,25 @@ pipeline {
         //         }
         //     }
         // }
+        stage('Package') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+        
+        stage('Build and push API to docker registry') {
+            steps {
+                 withCredentials([usernamePassword(credentialsId: 'DockerHubCredentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh """
+                            docker build -t imzerofiltre/paymybuddy:${env.BUILD_NUMBER} .
+                            echo "Image build complete"
+                            docker login -u $USERNAME -p $PASSWORD
+                            docker push imzerofiltre/paymybuddy:${env.BUILD_NUMBER}
+                            echo "Image push complete"
+                        """
+                    }
+            }
+                   
+        }
     }
-
 }
