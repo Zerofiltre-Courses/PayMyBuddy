@@ -52,4 +52,26 @@ pipeline {
                    
         }
     }
+    post {
+        success {
+            script {
+                emailext(
+                    subject: "Build Successful: ${currentBuild.fullDisplayName}",
+                    body: "The build has completed successfully. Check the artifacts here: ${env.BUILD_URL}",
+                    from: "xxxxxxx"
+                    to: sh(script: 'git log -1 --format="%ae" \$GIT_COMMIT', returnStdout: true).trim(),
+                )
+            }
+        }
+        failure {
+            script {
+                emailext(
+                    subject: "Build Failure: ${currentBuild.fullDisplayName}",
+                    body: "The build failed. Check the artifacts here: ${env.BUILD_URL}",
+                    to: sh(script: 'git log -1 --format="%ae" \$GIT_COMMIT', returnStdout: true).trim()
+                )
+            }
+        }
+    }
+
 }
